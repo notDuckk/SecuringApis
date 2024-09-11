@@ -1,4 +1,4 @@
-package org.example.securingapis.entities;
+package org.example.securingapis.models;
 
 import jakarta.persistence.Entity;
 

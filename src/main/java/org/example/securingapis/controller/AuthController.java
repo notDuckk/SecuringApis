@@ -1,33 +1,53 @@
-package org.example.securingapis;
+package org.example.securingapis.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.example.securingapis.config.UserAuthProvider;
+import org.example.securingapis.dto.CredentialsDto;
+import org.example.securingapis.dto.RegistrationDto;
+import org.example.securingapis.models.User;
+import org.example.securingapis.service.UserService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final UserAuthProvider userAuthProvider;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-
-    @Autowired
-    private JwtUserDetailsService userDetailsService;
+    public AuthController(UserService userService, UserAuthProvider userAuthProvider) {
+        this.userService = userService;
+        this.userAuthProvider = userAuthProvider;
+    }
 
     @PostMapping("/login")
-    public JwtResponse createAuthenticationToken(@RequestBody JwtRequest jwtRequest) throws Exception {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword())
-        );
+    public ResponseEntity<User> login(@RequestBody CredentialsDto credentials) {
+        User user = userService.login(credentials);
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequest.getUsername());
-        final String token = jwtTokenUtil.generateToken(userDetails.getUsername());
+        user.setToken(userAuthProvider.createToken(user.getUsername()));
+        return ResponseEntity.ok(user);
+    }
 
-        return new JwtResponse(token);
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody RegistrationDto registration) {
+        User user = userService.register(registration);
+
+        user.setToken(userAuthProvider.createToken(user.getUsername()));
+        return ResponseEntity.ok(user);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    @GetMapping("/details")
+    public String getDetails() {
+        return "All users can see this";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/admin/details")
+    public String getPrivateDetails() {
+        return "Only admins can see this";
     }
 }
