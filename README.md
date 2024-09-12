@@ -3,7 +3,8 @@
 ### The purpose of this project is to be able to login and register a user with the implementation of jwt tokens. 
 
 #### still working on implementing alot of the routes so only the /login route works
-- first you need to press the green play button in intellij near the top right of the program.
+- first start your redis server by running redis-server in Ubuntu.
+- then you need to press the green play button in intellij near the top right of the program.
 - then you need to type in the url that your computer is running the spring server on.
 - from there you can do /login and do a post request, and in the json body paste this {
   "username": "admin",
