@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -41,4 +42,31 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        var userDetailsManager = new InMemoryUserDetailsManager();
+
+        // Define users with roles
+        userDetailsManager.createUser(
+                User.withUsername("admin")
+                        .password("admin")
+                        .roles("ADMIN")
+                        .build());
+
+        userDetailsManager.createUser(
+                User.withUsername("user")
+                        .password("user")
+                        .roles("USER")
+                        .build());
+
+        return userDetailsManager;
+    }
+
+
 }
