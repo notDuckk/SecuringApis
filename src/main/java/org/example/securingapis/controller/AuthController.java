@@ -1,5 +1,6 @@
 package org.example.securingapis.controller;
 
+import jakarta.validation.Valid;
 import org.example.securingapis.config.UserAuthProvider;
 import org.example.securingapis.dto.CredentialsDto;
 import org.example.securingapis.dto.RegistrationDto;
@@ -24,7 +25,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody CredentialsDto credentials) {
+    public ResponseEntity<User> login(@Valid @RequestBody CredentialsDto credentials) {
+        System.out.println("usernameL:" + credentials.getUsername());
+        System.out.println("passwordL:" + credentials.getPassword());
+
         User user = userService.login(credentials);
 
         user.setToken(userAuthProvider.createToken(user.getUsername()));
@@ -32,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegistrationDto registration) {
+    public ResponseEntity<User> register(@Valid @RequestBody RegistrationDto registration) {
         User user = userService.register(registration);
 
         user.setToken(userAuthProvider.createToken(user.getUsername()));
